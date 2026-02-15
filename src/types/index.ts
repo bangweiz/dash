@@ -1,7 +1,8 @@
 export interface Section {
 	id: string;
 	title: string;
-	content: string;
+	content?: string;
+	path?: string;
 }
 
 export interface Plugin {

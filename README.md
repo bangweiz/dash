@@ -43,6 +43,28 @@ export default defineConfig([
 ])
 ```
 
+## Running the Application with Docset Support
+
+To enable the Docset functionality (downloading and viewing official documentation), you need to run the backend server alongside the frontend.
+
+1.  **Start the Backend Server**:
+    ```bash
+    bun run server
+    ```
+    This server runs on port 3000 and handles file system operations for docsets.
+
+2.  **Start the Frontend**:
+    ```bash
+    bun run dev
+    ```
+
+3.  **Usage**:
+    *   Open the app in your browser.
+    *   Click the "+" button in the sidebar.
+    *   Select "Install from Feed".
+    *   Click "Install" on a docset (e.g., Go, Java, Rust).
+    *   Once installed, the docset will appear in your sidebar.
+
 You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
 ```js

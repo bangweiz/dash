@@ -38,8 +38,22 @@ export const DocViewer: React.FC<DocViewerProps> = ({
 								{activePlugin?.name}
 							</span>
 						</div>
-						<div className="prose dark:prose-invert prose-blue prose-pre:bg-slate-900 prose-pre:border prose-pre:border-slate-700 max-w-none">
-							<div dangerouslySetInnerHTML={{ __html: activeDoc.content }} />
+						<div className="w-full h-full">
+							{activeDoc.content ? (
+								<div className="prose dark:prose-invert prose-blue prose-pre:bg-slate-900 prose-pre:border prose-pre:border-slate-700 max-w-none">
+									<div
+										dangerouslySetInnerHTML={{ __html: activeDoc.content }}
+									/>
+								</div>
+							) : activeDoc.path ? (
+								<iframe
+									src={`http://localhost:3000/api/docsets/${activePlugin?.id}/file/${activeDoc.path}`}
+									className="w-full h-full min-h-[85vh] border-0"
+									title={activeDoc.title}
+								/>
+							) : (
+								<div>No content available</div>
+							)}
 						</div>
 					</div>
 				) : (

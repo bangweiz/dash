@@ -1,27 +1,95 @@
-## Converting Official Documentation (Docsets)
+# React + TypeScript + Vite
 
-You can convert official Docsets (used by Dash/Zeal) into the JSON format supported by this application using the included script.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-### Prerequisites
+Currently, two official plugins are available:
 
-1.  Download a Docset (e.g., from [Zeal's feed](https://zealusercontent.com/org.zealdocs.zeal/manifest.json) or [Kapeli's repo](https://github.com/Kapeli/Dash-User-Contributions)).
-2.  Extract the Docset so you have a `.docset` directory.
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-### Usage
+## React Compiler
 
-Run the conversion script:
+The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
 
-```bash
-bun run convert-docset <path-to-docset-folder> [output-file.json]
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+
+```js
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
+
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
 
-Example:
+## Running the Application with Docset Support
 
-```bash
-bun run convert-docset ./downloads/Go.docset ./go-plugin.json
+To enable the Docset functionality (downloading and viewing official documentation), you need to run the backend server alongside the frontend.
+
+1.  **Start the Backend Server**:
+    ```bash
+    bun run server
+    ```
+    This server runs on port 3000 and handles file system operations for docsets.
+
+2.  **Start the Frontend**:
+    ```bash
+    bun run dev
+    ```
+
+3.  **Usage**:
+    *   Open the app in your browser.
+    *   Click the "+" button in the sidebar.
+    *   Select "Install from Feed".
+    *   Click "Install" on a docset (e.g., Go, Java, Rust).
+    *   Once installed, the docset will appear in your sidebar.
+
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
-
-Then, in the application:
-1.  Click the "+" button in the sidebar.
-2.  Copy the content of the generated JSON file.
-3.  Paste it into the import modal.

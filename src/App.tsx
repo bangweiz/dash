@@ -6,6 +6,7 @@ import { NavigationPanel } from "./components/Sidebar/NavigationPanel";
 import { DocViewer } from "./components/MainContent/DocViewer";
 import { ImportModal } from "./components/Modals/ImportModal";
 import { LanguageSwitcher } from "./components/CommandPalette/LanguageSwitcher";
+import { api } from "./api";
 
 export default function App() {
 	// --- State ---
@@ -43,11 +44,63 @@ export default function App() {
 		return activePlugin.sections.filter(
 			(s) =>
 				s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				s.content.toLowerCase().includes(searchQuery.toLowerCase()),
+				(s.content
+					? s.content.toLowerCase().includes(searchQuery.toLowerCase())
+					: false),
 		);
 	}, [activePlugin, searchQuery]);
 
 	// --- Effects ---
+
+	// Load Installed Docsets on Mount
+	useEffect(() => {
+		api.getDocsets().then((docsets) => {
+			if (docsets.length > 0) {
+				const newPlugins: Plugin[] = docsets.map((d) => ({
+					...d,
+					sections: [],
+				}));
+				// Merge with default plugins or replace
+				setPlugins((prev) => {
+					// Avoid duplicates
+					const unique = [...prev];
+					for (const p of newPlugins) {
+						if (!unique.find((u) => u.id === p.id)) {
+							unique.push(p);
+						}
+					}
+					return unique;
+				});
+			}
+		});
+	}, []);
+
+	// Load Sections when Plugin Selected
+	useEffect(() => {
+		if (activePluginId && activePlugin) {
+			// If no sections loaded yet, fetch them (only for docsets, not default plugins)
+			const isDefault = DEFAULT_PLUGINS.some((p) => p.id === activePluginId);
+			if (!isDefault && activePlugin.sections.length === 0) {
+				api.getSections(activePluginId).then((sections) => {
+					setPlugins((prev) =>
+						prev.map((p) =>
+							p.id === activePluginId
+								? {
+										...p,
+										sections: sections.map((s) => ({
+											id: s.id,
+											title: s.title,
+											path: s.path,
+											content: "", // Content loaded on demand by DocViewer
+										})),
+									}
+								: p,
+						),
+					);
+				});
+			}
+		}
+	}, [activePluginId, activePlugin]);
 
 	// Global Keyboard Shortcuts
 	useEffect(() => {
@@ -106,6 +159,20 @@ export default function App() {
 		selectPlugin(newPlugin.id);
 	};
 
+	const handleInstallDocset = async (url: string, name: string) => {
+		try {
+			await api.installDocset(url, name);
+			// Reload docsets
+			const docsets = await api.getDocsets();
+			const newPlugin = docsets.find((d) => d.name === name);
+			if (newPlugin) {
+				handleImportPlugin({ ...newPlugin, sections: [] });
+			}
+		} catch (e) {
+			alert("Installation Failed: " + e);
+		}
+	};
+
 	return (
 		<div className="flex h-screen w-full bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans overflow-hidden">
 			{/* --- Sidebar Container (Split into Rail and Panel) --- */}
@@ -153,6 +220,7 @@ export default function App() {
 				<ImportModal
 					onClose={() => setShowImportModal(false)}
 					onImport={handleImportPlugin}
+					onInstall={handleInstallDocset}
 				/>
 			)}
 		</div>

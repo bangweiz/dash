@@ -53,6 +53,8 @@ To enable the Docset functionality (downloading and viewing official documentati
     ```
     This server runs on port 3000 and handles file system operations for docsets.
 
+    You can access the **Server Dashboard** at [http://localhost:3000](http://localhost:3000) to manage installed docsets (install/delete).
+
 2.  **Start the Frontend**:
     ```bash
     bun run dev
